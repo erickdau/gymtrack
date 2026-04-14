@@ -277,9 +277,62 @@ function scheduleRestBeeps() {
   }
 }
 
-// ── Stubs for later tasks ──────────────────────────
-function checkWorkoutComplete() {} // Task 13
-function triggerSync(earlyFinish) {} // Task 13
+// ── Workout Completion ─────────────────────────────
+function checkWorkoutComplete() {
+  const exercises = CONFIG.days[state.activeDay];
+  const allDone = exercises.every(ex => {
+    const s = state.cardStates[ex.name];
+    return s && s.phase === 'done';
+  });
+  if (allDone) triggerSync(false);
+}
+
+async function triggerSync(earlyFinish) {
+  const exercises = CONFIG.days[state.activeDay];
+  const gymName = CONFIG.gyms[state.activeGymIndex].name;
+  const now = new Date();
+
+  const completedExercises = exercises.filter(ex => {
+    const s = state.cardStates[ex.name];
+    return s && s.phase === 'done';
+  });
+
+  const exerciseRows = completedExercises.map(ex => {
+    const swState = state.cardStates[ex.name];
+    const weightData = getWeight(ex.name, state.activeGymIndex);
+    const restMs = getRestDurations(swState);
+    return buildExerciseRow({ ...ex, day: state.activeDay }, gymName, weightData, restMs, now);
+  });
+
+  const sessionRow = buildSessionSummary(
+    state.activeDay,
+    gymName,
+    state.workoutStartTime,
+    completedExercises.map(ex => ex.name),
+    now
+  );
+
+  setLastSession({ date: sessionRow.date, day: state.activeDay });
+
+  const payload = { exerciseRows, sessionRow };
+
+  try {
+    await syncExercises(CONFIG.sheetsWebAppUrl, exerciseRows);
+    await syncSession(CONFIG.sheetsWebAppUrl, sessionRow);
+    showSyncStatus('Synced to Sheets ✓');
+  } catch (e) {
+    addToSyncQueue(payload);
+    showSyncStatus('Offline — will sync later');
+  }
+}
+
+function showSyncStatus(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);color:var(--green);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;z-index:100;border:1px solid var(--border);';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
 
 // ── Placeholder stubs (implemented in later tasks) ─
 function checkSkippedDays() {}
