@@ -244,8 +244,40 @@ function onStopwatchTap(exercise, card) {
   checkWorkoutComplete();
 }
 
+// ── Audio ──────────────────────────────────────────
+let _audioCtx = null;
+
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function scheduleRestBeeps() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const base = ctx.currentTime;
+    [45, 46, 47, 48, 49, 50].forEach(sec => {
+      const t = base + sec;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = sec === 50 ? 1100 : 880;
+      gain.gain.setValueAtTime(0.0, t);
+      gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    });
+  } catch (e) {
+    console.warn('Audio not available:', e);
+  }
+}
+
 // ── Stubs for later tasks ──────────────────────────
-function scheduleRestBeeps() {}   // Task 12
 function checkWorkoutComplete() {} // Task 13
 function triggerSync(earlyFinish) {} // Task 13
 
