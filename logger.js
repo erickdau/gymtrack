@@ -1,8 +1,13 @@
 function formatDate(d) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function buildExerciseRow(exercise, gymName, weightData, restDurationsMs, date) {
+  // Round each duration first so rest_durations, avg_rest_s, and max_rest_s
+  // are all derived from the same integer-second values (internally consistent).
   const restS = restDurationsMs.map(ms => Math.round(ms / 1000));
   const avgRest = restS.length
     ? Math.round(restS.reduce((a, b) => a + b, 0) / restS.length)

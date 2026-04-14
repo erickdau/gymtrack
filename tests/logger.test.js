@@ -1,8 +1,8 @@
 const { buildExerciseRow, buildSessionSummary, buildSkippedRow, formatDate } = require('../logger');
 
 describe('formatDate', () => {
-  test('formats Date to YYYY-MM-DD', () => {
-    expect(formatDate(new Date('2026-04-14T10:00:00Z'))).toBe('2026-04-14');
+  test('formats Date to YYYY-MM-DD using local timezone', () => {
+    expect(formatDate(new Date(2026, 3, 14))).toBe('2026-04-14'); // month is 0-indexed
   });
 });
 
@@ -10,7 +10,7 @@ describe('buildExerciseRow', () => {
   const exercise = { name: 'Bench Press', sets: 4, reps: 12, day: 'A' };
   const weightData = { type: 'plates', value: 3, plateWeight: 10 };
   const restDurationsMs = [52000, 48000, 61000];
-  const date = new Date('2026-04-14T10:00:00Z');
+  const date = new Date(2026, 3, 14, 10, 0, 0); // local time
 
   test('produces correct shape', () => {
     const row = buildExerciseRow(exercise, 'Gym 1', weightData, restDurationsMs, date);
@@ -56,7 +56,7 @@ describe('buildSessionSummary', () => {
 
 describe('buildSkippedRow', () => {
   test('produces date string', () => {
-    const row = buildSkippedRow(new Date('2026-04-13T10:00:00Z'));
+    const row = buildSkippedRow(new Date(2026, 3, 13, 10, 0, 0)); // local time
     expect(row).toEqual({ date: '2026-04-13' });
   });
 });
