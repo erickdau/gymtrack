@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
   bindGymToggle();
   checkSkippedDays();
   retrySyncQueue();
+  document.getElementById('finish-early-btn').addEventListener('click', () => {
+    triggerSync(true);
+  });
 });
 
 // ── Tabs ───────────────────────────────────────────
@@ -166,9 +169,85 @@ function swLabelText(swState) {
   return '';
 }
 
+// ── Finish Early Button ────────────────────────────
+function updateFinishEarlyButton() {
+  const btn = document.getElementById('finish-early-btn');
+  const exercises = CONFIG.days[state.activeDay];
+  const anyStarted = exercises.some(ex => {
+    const s = state.cardStates[ex.name];
+    return s && s.phase !== 'idle';
+  });
+  btn.classList.toggle('hidden', !anyStarted);
+}
+
+// ── Stopwatch Tick ─────────────────────────────────
+let _tickInterval = null;
+
+function startTickLoop() {
+  if (_tickInterval) return;
+  _tickInterval = setInterval(tickAllStopwatches, 100);
+}
+
+function tickAllStopwatches() {
+  const now = Date.now();
+  document.querySelectorAll('.exercise-card').forEach(card => {
+    const name = card.dataset.exercise;
+    const swState = state.cardStates[name];
+    if (!swState || swState.phase === 'idle' || swState.phase === 'done') return;
+
+    const elapsed = now - swState.startTime;
+    const timeEl = card.querySelector('.stopwatch-time');
+    timeEl.textContent = formatMs(elapsed);
+  });
+}
+
+function formatMs(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+  const s = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+// ── Stopwatch Tap ──────────────────────────────────
+function onStopwatchTap(exercise, card) {
+  const prev = state.cardStates[exercise.name];
+  if (prev.phase === 'done') return;
+
+  const now = Date.now();
+
+  if (!state.workoutStartTime) {
+    state.workoutStartTime = now;
+  }
+
+  const next = tapStopwatch(prev, now);
+  state.cardStates[exercise.name] = next;
+
+  const timeEl = card.querySelector('.stopwatch-time');
+  const labelEl = card.querySelector('.stopwatch-label');
+
+  timeEl.className = `stopwatch-time ${next.phase}`;
+  timeEl.textContent = next.phase === 'done'
+    ? formatMs(next.phaseDurations.reduce((a, b) => a + b, 0))
+    : '00:00';
+  labelEl.textContent = swLabelText(next);
+
+  if (next.phase === 'done') {
+    card.classList.add('done');
+  }
+
+  if (next.phase === 'rest') {
+    scheduleRestBeeps();
+  }
+
+  startTickLoop();
+  updateFinishEarlyButton();
+  checkWorkoutComplete();
+}
+
 // ── Stubs for later tasks ──────────────────────────
-function updateFinishEarlyButton() {}
-function onStopwatchTap(exercise, card) {}
+function scheduleRestBeeps() {}   // Task 12
+function checkWorkoutComplete() {} // Task 13
+function triggerSync(earlyFinish) {} // Task 13
 
 // ── Placeholder stubs (implemented in later tasks) ─
 function checkSkippedDays() {}
