@@ -1,17 +1,17 @@
 const CACHE = 'gym-tracker-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/config.js',
-  '/stopwatch.js',
-  '/storage.js',
-  '/logger.js',
-  '/sheets.js',
-  '/app.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  './',
+  './index.html',
+  './style.css',
+  './config.js',
+  './stopwatch.js',
+  './storage.js',
+  './logger.js',
+  './sheets.js',
+  './app.js',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 self.addEventListener('install', e => {

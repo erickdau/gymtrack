@@ -1,5 +1,5 @@
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(console.error);
+  navigator.serviceWorker.register('./sw.js').catch(console.error);
 }
 
 // ── App State ──────────────────────────────────────
