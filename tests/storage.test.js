@@ -29,6 +29,11 @@ describe('weight storage', () => {
     expect(getWeight('Bench Press', 0).value).toBe(60);
     expect(getWeight('Squat', 0).value).toBe(80);
   });
+
+  test('getWeight returns default when stored value is corrupted JSON', () => {
+    localStorage.setItem('weight__Bench Press__0', 'NOT_VALID_JSON{{{');
+    expect(getWeight('Bench Press', 0)).toEqual({ type: 'kg', value: '', plateWeight: '' });
+  });
 });
 
 describe('sync queue', () => {

@@ -5,7 +5,11 @@ function _weightKey(exerciseName, gymIndex) {
 function getWeight(exerciseName, gymIndex) {
   const raw = localStorage.getItem(_weightKey(exerciseName, gymIndex));
   if (!raw) return { type: 'kg', value: '', plateWeight: '' };
-  return JSON.parse(raw);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { type: 'kg', value: '', plateWeight: '' };
+  }
 }
 
 function setWeight(exerciseName, gymIndex, data) {
@@ -14,7 +18,12 @@ function setWeight(exerciseName, gymIndex, data) {
 
 function getSyncQueue() {
   const raw = localStorage.getItem('sync_queue');
-  return raw ? JSON.parse(raw) : [];
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
 }
 
 function addToSyncQueue(payload) {
@@ -29,7 +38,12 @@ function clearSyncQueue() {
 
 function getLastSession() {
   const raw = localStorage.getItem('last_session');
-  return raw ? JSON.parse(raw) : null;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 function setLastSession(data) {
