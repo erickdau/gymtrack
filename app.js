@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkSkippedDays();
   retrySyncQueue();
   document.getElementById('finish-early-btn').addEventListener('click', () => {
-    triggerSync(true);
+    triggerSync();
   });
 });
 
@@ -177,7 +177,11 @@ function updateFinishEarlyButton() {
     const s = state.cardStates[ex.name];
     return s && s.phase !== 'idle';
   });
-  btn.classList.toggle('hidden', !anyStarted);
+  const allDone = exercises.every(ex => {
+    const s = state.cardStates[ex.name];
+    return s && s.phase === 'done';
+  });
+  btn.classList.toggle('hidden', !anyStarted || allDone);
 }
 
 // ── Stopwatch Tick ─────────────────────────────────
@@ -190,15 +194,24 @@ function startTickLoop() {
 
 function tickAllStopwatches() {
   const now = Date.now();
-  document.querySelectorAll('.exercise-card').forEach(card => {
+  const cards = document.querySelectorAll('.exercise-card');
+  let anyActive = false;
+
+  cards.forEach(card => {
     const name = card.dataset.exercise;
     const swState = state.cardStates[name];
     if (!swState || swState.phase === 'idle' || swState.phase === 'done') return;
 
+    anyActive = true;
     const elapsed = now - swState.startTime;
     const timeEl = card.querySelector('.stopwatch-time');
     timeEl.textContent = formatMs(elapsed);
   });
+
+  if (!anyActive) {
+    clearInterval(_tickInterval);
+    _tickInterval = null;
+  }
 }
 
 function formatMs(ms) {
@@ -284,10 +297,11 @@ function checkWorkoutComplete() {
     const s = state.cardStates[ex.name];
     return s && s.phase === 'done';
   });
-  if (allDone) triggerSync(false);
+  if (allDone) triggerSync();
 }
 
-async function triggerSync(earlyFinish) {
+async function triggerSync() {
+  if (!state.workoutStartTime) return;
   const exercises = CONFIG.days[state.activeDay];
   const gymName = CONFIG.gyms[state.activeGymIndex].name;
   const now = new Date();

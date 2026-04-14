@@ -40,7 +40,7 @@ function buildSessionSummary(day, gymName, workoutStartTime, exerciseNames, now)
 }
 
 function buildSkippedRow(date) {
-  return { date: formatDate(date) };
+  return { date: formatDate(date), day_skipped: 'unknown' };
 }
 
 if (typeof module !== 'undefined') {

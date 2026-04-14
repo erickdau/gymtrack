@@ -55,8 +55,8 @@ describe('buildSessionSummary', () => {
 });
 
 describe('buildSkippedRow', () => {
-  test('produces date string', () => {
-    const row = buildSkippedRow(new Date(2026, 3, 13, 10, 0, 0)); // local time
-    expect(row).toEqual({ date: '2026-04-13' });
+  test('produces date and day_skipped fields', () => {
+    const row = buildSkippedRow(new Date(2026, 3, 13, 10, 0, 0));
+    expect(row).toEqual({ date: '2026-04-13', day_skipped: 'unknown' });
   });
 });

@@ -30,9 +30,9 @@ function doPost(e) {
     var kSheet = ss.getSheetByName('Skipped');
     if (!kSheet) {
       kSheet = ss.insertSheet('Skipped');
-      kSheet.appendRow(['date']);
+      kSheet.appendRow(['date', 'day_skipped']);
     }
-    kSheet.appendRow([data.date]);
+    kSheet.appendRow([data.date, data.day_skipped || '']);
   }
 
   return ContentService
