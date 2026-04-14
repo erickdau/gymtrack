@@ -2,6 +2,20 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(console.error);
 }
 
+// ── Screen Wake Lock ────────────────────────────────
+let wakeLock = null;
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch (_) {}
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') requestWakeLock();
+});
+requestWakeLock();
+
 // ── App State ──────────────────────────────────────
 const state = {
   activeDay: 'A',
